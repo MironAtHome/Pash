@@ -27,6 +27,7 @@
     <Externalconsole>true</Externalconsole>
     <CodeAnalysisRuleSet>..\..\Tools\FxCop\PashRules.Warnings.ruleset</CodeAnalysisRuleSet>
     <RunCodeAnalysis>true</RunCodeAnalysis>
+    <LangVersion>4</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>

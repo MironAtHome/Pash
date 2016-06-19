@@ -10,6 +10,7 @@ namespace System.Management.Automation
     {
         public OutputTypeAttribute(params string[] type)
         {
+            Type = type.Select(t => new PSTypeName(t)).ToArray();
         }
 
         public OutputTypeAttribute(params Type[] type)
