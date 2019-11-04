@@ -1,4 +1,4 @@
-Please add yourself to this list when you send your first Pull Request to 
+﻿Please add yourself to this list when you send your first Pull Request to 
 Pash.
 
 <!-- 
@@ -23,3 +23,4 @@ Stefan Burnicki            | [@sburnicki](https://github.com/sburnicki)         
 Sergei Vorobev             | [@vors](https://github.com/vors)                       | <xvorsx@gmail.com>            | 
 Matt Ward                  | [@mrward](https://github.com/mrward)                   |                               | 
 Alexander Bussmann         | [@atbussma](https://github.com/atbussma)               | <alex@parsestack.com>         |
+Miron Berlin               | [@MironAtHome](https://github.com/MironAtHome)         | <mironatpro@hotmail.com>      |
