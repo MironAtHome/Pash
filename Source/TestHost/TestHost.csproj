@@ -126,6 +126,10 @@
       <Project>{0E1D573C-C57D-4A83-A739-3A38E719D87E}</Project>
       <Name>Microsoft.PowerShell.Commands.Utility</Name>
     </ProjectReference>
+    <ProjectReference Include="..\ReferenceTests\ReferenceTests.csproj">
+      <Project>{a415cc70-7710-49b7-b47d-0c8d93ce20d8}</Project>
+      <Name>ReferenceTests</Name>
+    </ProjectReference>
     <ProjectReference Include="..\System.Management\System.Management.csproj">
       <Project>{C5E303EC-5684-4C95-B0EC-2593E6662403}</Project>
       <Name>System.Management</Name>
@@ -141,10 +145,6 @@
     <ProjectReference Include="..\Microsoft.PowerShell.Security\Microsoft.PowerShell.Security.csproj">
       <Project>{DF4B0778-BBB9-4A69-AADE-FD4361675644}</Project>
       <Name>Microsoft.PowerShell.Security</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\ReferenceTests\ReferenceTests.csproj">
-      <Project>{A415CC70-7710-49B7-B47D-0C8D93CE20D8}</Project>
-      <Name>ReferenceTests</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

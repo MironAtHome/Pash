@@ -170,7 +170,16 @@ namespace Pash.Implementation
             {
                 ThrowNotInteractiveException();
             }
-            return UseUnixLikeInput ? _getlineEditor.Edit("", intialValue, addToHistory) : Console.ReadLine();
+            string intput_ = null;
+            if(UseUnixLikeInput)
+            {
+                intput_ = _getlineEditor.Edit("", intialValue, addToHistory);
+            }
+            else
+            {
+                intput_ = Console.ReadLine();
+            }
+            return intput_;
         }
         #endregion
 

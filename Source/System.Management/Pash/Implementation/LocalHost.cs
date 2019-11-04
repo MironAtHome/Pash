@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.IO;
 using System.Management.Automation.Host;
 using System.Globalization;
 using System.Management.Automation;
@@ -95,10 +96,21 @@ namespace Pash.Implementation
 
         public LocalHost() : this(false)
         {
+            Console.InputEncoding = Encoding.GetEncoding(CurrentCulture.TextInfo.OEMCodePage);
+            Console.OutputEncoding = Encoding.GetEncoding(CurrentCulture.TextInfo.OEMCodePage);
         }
 
         public LocalHost(bool interactiveIO)
         {
+            if(interactiveIO)
+            {
+
+                BinaryStream s = new Stream();
+                TextReader trin = new StreamReader(Encoding.UTF8) as TextReader;
+                Console.SetIn(trin);
+                Console.InputEncoding = Encoding.GetEncoding(CurrentUICulture.TextInfo.OEMCodePage);
+                Console.OutputEncoding = Encoding.GetEncoding(CurrentUICulture.TextInfo.OEMCodePage);
+            }
             localHostUserInterface = new LocalHostUserInterface(this, interactiveIO);
         }
 

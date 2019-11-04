@@ -35,6 +35,7 @@ namespace Microsoft.PowerShell.Commands
         {
             var runtime = ProviderRuntime;
             runtime.PassThru = PassThru;
+            runtime.Force = Force;
             var container = Container.IsPresent ? CopyContainers.CopyTargetContainer
                                                 : CopyContainers.CopyChildrenOfTargetContainer;
             InvokeProvider.Item.Copy(InternalPaths, Destination, Recurse.IsPresent, container, runtime);

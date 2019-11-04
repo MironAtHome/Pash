@@ -37,6 +37,7 @@ namespace Microsoft.PowerShell.Commands
         {
             var normPath = new Path(path).NormalizeSlashes();
             var normBase = new Path(basePath).NormalizeSlashes();
+            
             if (!normPath.StartsWith(normBase))
             {
                 var ex = new PSArgumentException("Path is outside of base path!", "PathOutsideBasePath",
@@ -48,9 +49,210 @@ namespace Microsoft.PowerShell.Commands
             return new Path(path.Substring(basePath.Length)).TrimStartSlash().ToString();
         }
 
+        void CopySubdirectory(System.IO.DirectoryInfo directoryInfo, string targetDirectory, bool overwrite)
+        {
+            if(!System.IO.Directory.Exists(targetDirectory))
+            {
+                System.IO.Directory.CreateDirectory(targetDirectory);
+            }
+
+            foreach (System.IO.FileInfo file in directoryInfo.GetFiles())
+            {
+                string filePath = System.IO.Path.Combine(targetDirectory, file.Name);
+                if (overwrite)
+                {
+                    file.CopyTo(filePath, true);
+                }
+                else
+                {
+                    if (System.IO.File.Exists(filePath))
+                    {
+                        throw new Exception(String.Format("Destination file {0} exists. Please issue command with -Force flag to overwrite", filePath));
+                    }
+                    else
+                    {
+                        file.CopyTo(filePath);
+                    }
+                }
+            }
+
+            foreach (System.IO.DirectoryInfo di_inner in directoryInfo.GetDirectories())
+            {
+                string directoryPath = System.IO.Path.Combine(targetDirectory, di_inner.Name);
+                CopySubdirectory(di_inner, directoryPath, overwrite);
+            }
+        }
+
         protected override void CopyItem(string path, string destinationPath, bool recurse)
         {
-            throw new NotImplementedException();
+            bool isContainer = false;
+            bool isContainerDestination = false;
+            bool isForceSpecified = Force.IsPresent;
+
+            if (string.IsNullOrEmpty(path))
+            {
+                throw new Exception("Path can't be empty");
+            }
+
+            if (string.IsNullOrEmpty(destinationPath))
+            {
+                throw new Exception("Destination path can't be empty");
+            }
+
+            path = NormalizePath(path);
+            System.IO.FileSystemInfo fileSystemInfo = GetFileSystemInfo(path, ref isContainer, false);
+
+            if (fileSystemInfo == null)
+            {
+                throw new Exception(String.Format("Item {0} does not exist", path));
+            }
+
+            if (!fileSystemInfo.Exists)
+            {
+                throw new Exception(String.Format("Item {0} does not exist", path));
+            }
+
+            destinationPath = NormalizePath(destinationPath);
+            System.IO.FileSystemInfo fileSystemInfoDestination = GetFileSystemInfo(destinationPath, ref isContainerDestination, false);
+
+            if ( isContainer == true 
+                 && (fileSystemInfoDestination != null && fileSystemInfoDestination.Exists == true )
+                 && isContainerDestination == false )
+            {
+                throw new Exception(String.Format("Directory {0} cannot by copied over file {1}", path, destinationPath));
+            }
+
+            if (    isContainer == true 
+                 && ( fileSystemInfoDestination == null || fileSystemInfoDestination.Exists == false )
+                 && ( destinationPath.IndexOfAny(System.IO.Path.GetInvalidPathChars()) >= 0 )
+                )
+            {
+                throw new Exception(String.Format("Destination path {0} contains invalid chracarter(s)", destinationPath));
+            }
+
+            if (isContainer)
+            {
+                try
+                { 
+                    if(fileSystemInfoDestination == null || fileSystemInfoDestination.Exists == false)
+                    {
+                        System.IO.Directory.CreateDirectory(destinationPath);
+                    }
+
+                    System.IO.DirectoryInfo di = new System.IO.DirectoryInfo(path);
+
+                    foreach(System.IO.FileInfo file in di.GetFiles() )
+                    {
+                        string filePath = System.IO.Path.Combine(destinationPath, file.Name);
+                        if (isForceSpecified)
+                        {
+                            file.CopyTo(filePath, true);
+                        }
+                        else
+                        {
+                            if(System.IO.File.Exists(filePath))
+                            {
+                                throw new Exception(String.Format("Destination file {0} exists. Please issue command with -Force flag to overwrite", filePath));
+                            }
+                            else
+                            {
+                                file.CopyTo(filePath);
+                            }
+                        }
+                    }
+
+                    if(recurse)
+                    {
+                        foreach(System.IO.DirectoryInfo di_inner in di.GetDirectories() )
+                        {
+                            string directoryPath = System.IO.Path.Combine(destinationPath,di_inner.Name);
+                            CopySubdirectory(di_inner, directoryPath, isForceSpecified);
+                        }
+                    }
+                }
+                catch (System.IO.IOException ex)
+                {
+                    WriteError(new ErrorRecord(ex, "NewItem", ErrorCategory.WriteError, path));
+                }
+                return;
+            }
+
+            try { 
+
+                if ( (fileSystemInfoDestination != null && fileSystemInfoDestination.Exists == true )
+                    && isContainerDestination == false 
+                    && isForceSpecified == false
+                    )
+                {
+                    throw new Exception("Cannot copy file  over existing file or directory");
+                }
+
+                if (fileSystemInfoDestination != null && fileSystemInfoDestination.Exists == true )
+                {
+                    if (isContainerDestination == false)
+                    {
+                        if (!isForceSpecified)
+                        {
+                            throw new Exception(String.Format("Destination file {0} exists. Please issue command with -Force flag to overwrite", destinationPath));
+                        }
+                        else
+                        {
+                            System.IO.File.Copy(path, destinationPath, true);
+                        }
+                    }
+                    else
+                    {
+                        destinationPath = System.IO.Path.Combine(destinationPath, fileSystemInfo.Name);
+                        if (System.IO.File.Exists(destinationPath))
+                        {
+                            System.IO.File.Copy(path, destinationPath);
+                        }
+                    }
+                }
+                else
+                {
+                    string destinationDirectory = string.Empty;
+                    if (destinationPath.EndsWith(System.IO.Path.DirectorySeparatorChar.ToString())
+                       || destinationPath.EndsWith(System.IO.Path.AltDirectorySeparatorChar.ToString())
+                        )
+                    {
+                        if (destinationPath.IndexOfAny(System.IO.Path.GetInvalidFileNameChars()) >= 0 )
+                        {
+                            throw new Exception(String.Format("Path {0} contains illegal character(s)", path));
+                        }
+                        else
+                        {
+                            if (!System.IO.Directory.Exists(destinationPath))
+                            {
+                                System.IO.Directory.CreateDirectory(destinationPath);
+                            }
+                            destinationPath = System.IO.Path.Combine(destinationPath, fileSystemInfo.Name);
+                            System.IO.File.Copy(path, destinationPath);
+                        }
+                    }
+                    else
+                    {
+                        destinationDirectory = System.IO.Path.GetDirectoryName(destinationPath);
+                        string destinationFileName = System.IO.Path.GetFileName(destinationPath);
+
+                        if (destinationFileName.IndexOfAny(System.IO.Path.GetInvalidFileNameChars()) >= 0
+                          || destinationDirectory.IndexOfAny(System.IO.Path.GetInvalidPathChars()) >= 0
+                        )
+                        {
+                            throw new Exception(String.Format("Path {0} contains illegal character(s)", path));
+                        }
+                        if (!System.IO.Directory.Exists(destinationDirectory))
+                        {
+                            System.IO.Directory.CreateDirectory(destinationDirectory);
+                        }
+                        System.IO.File.Copy(path, destinationPath);
+                    }
+                }
+            }
+            catch (System.IO.IOException ex)
+            {
+                WriteError(new ErrorRecord(ex, "NewItem", ErrorCategory.WriteError, path));
+            }
         }
 
         protected override string MakePath(string parent, string child)
@@ -343,7 +545,10 @@ namespace Microsoft.PowerShell.Commands
             return false;
         }
 
-        protected override void MoveItem(string path, string destination) { throw new NotImplementedException(); }
+        protected override void MoveItem(string path, string destination)
+        {
+            throw new NotImplementedException();
+        }
 
         protected override PSDriveInfo NewDrive(PSDriveInfo drive)
         {
