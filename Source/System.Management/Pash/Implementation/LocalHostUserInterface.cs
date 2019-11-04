@@ -177,8 +177,6 @@ namespace Pash.Implementation
             }
             else
             {
-                Console.InputEncoding = UnicodeEncoding.Unicode;
-                Console.OutputEncoding = UnicodeEncoding.Unicode;
                 intput_ = Console.ReadLine();
             }
             return intput_;

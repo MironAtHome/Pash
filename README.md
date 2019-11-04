@@ -72,3 +72,4 @@ If you like Pash and want to express your gratitude, you could:
 - Volunteer in your community.
 - Give free hugs!
 - If you're making money with Pash, then you should [send money](https://www.gittip.com/PashProject/).
+- I was making money and didn't pay
